@@ -47,6 +47,7 @@ const (
 )
 
 func main() {
+	// Start the verification process
 	if err := verify(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -54,13 +55,16 @@ func main() {
 }
 
 func verify() error {
+	// Decode the transaction hash
 	txHashBz, err := hex.DecodeString(txHash)
 	if err != nil {
 		return err
 	}
 
+	// Initialize the logger
 	logger := server.ZeroLogWrapper{Logger: zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()}
 
+	// Establish a connection to the Tendermint RPC server
 	trpc, err := http.New(rpcEndpoint, "/websocket")
 	if err != nil {
 		return err
@@ -78,23 +82,28 @@ func verify() error {
 
 	ctx := context.Background()
 
+	// Fetch the transaction with the decoded hash
 	tx, err := trpc.Tx(ctx, txHashBz, true)
 	if err != nil {
 		return err
 	}
 
+	// Log the start of the verification process
 	logger.Info("verifying that the blob was committed to by Blobstream", "tx_hash", txHash, "height", tx.Height)
 
+	// Fetch the block that contains the transaction
 	blockRes, err := trpc.Block(ctx, &tx.Height)
 	if err != nil {
 		return err
 	}
 
+	// Calculate the range of shares that the blob occupies in the block
 	blobShareRange, err := square.BlobShareRange(blockRes.Block.Txs.ToSliceOfBytes(), int(tx.Index), int(blobIndex), blockRes.Block.Header.Version.App)
 	if err != nil {
 		return err
 	}
 
+	// Log the start of the proof generation process
 	logger.Info(
 		"proving shares inclusion to data root",
 		"height",
@@ -105,23 +114,24 @@ func verify() error {
 		blobShareRange.End,
 	)
 
+	// Generate a proof of inclusion for the blob in the block
 	logger.Debug("getting shares proof from tendermint node")
 	sharesProofs, err := trpc.ProveShares(ctx, uint64(tx.Height), uint64(blobShareRange.Start), uint64(blobShareRange.End))
 	if err != nil {
 		return err
 	}
 
+	// Verify the proof of inclusion
 	logger.Debug("verifying shares proofs")
-	// checks if the shares proof is valid.
-	// the shares proof is self verifiable because it contains also the rows roots
-	// which the nmt shares proof is verified against.
 	if !sharesProofs.VerifyProof() {
 		logger.Info("proofs from shares to data root are invalid")
 		return err
 	}
 
+	// Log the result of the proof verification process
 	logger.Info("proofs from shares to data root are valid")
 
+	// Establish a connection to the gRPC server
 	coreGRPC, err := grpc.Dial(celesGRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -133,8 +143,10 @@ func verify() error {
 		}
 	}(coreGRPC)
 
+	// Convert the contract address from a string to an Ethereum address
 	contractAddress := ethcmn.HexToAddress(contractAddr)
 
+	// Log the start of the proof generation process for the data root
 	logger.Info(
 		"proving that the data root was committed to in the BlobstreamX contract",
 		"contract_address",
@@ -147,29 +159,36 @@ func verify() error {
 		dataCommitmentNonce,
 	)
 
+	// Generate a proof of inclusion for the data root in the BlobstreamX contract
 	logger.Debug("getting the data root to commitment inclusion proof")
 	dcProof, err := trpc.DataRootInclusionProof(ctx, uint64(tx.Height), dataCommitmentStartBlock, dataCommitmentEndBlock)
 	if err != nil {
 		return err
 	}
 
+	// Fetch the block that contains the data root
 	block, err := trpc.Block(ctx, &tx.Height)
 	if err != nil {
 		return err
 	}
 
+	// Establish a connection to the Ethereum client
 	ethClient, err := ethclient.Dial(evmRPC)
 	if err != nil {
 		return err
 	}
 	defer ethClient.Close()
 
+	// Fetch the BlobstreamX contract
 	blobstreamWrapper, err := wrapper.NewWrappers(contractAddress, ethClient)
 	if err != nil {
 		return err
 	}
 
+	// Log the start of the proof verification process for the data root
 	logger.Info("verifying that the data root was committed to in the BlobstreamX contract")
+
+	// Verify the proof of inclusion for the data root in the BlobstreamX contract
 	isCommittedTo, err := VerifyDataRootInclusion(
 		ctx,
 		blobstreamWrapper,
@@ -182,6 +201,7 @@ func verify() error {
 		return err
 	}
 
+	// Log the result of the proof verification process for the data root
 	if isCommittedTo {
 		logger.Info("the BlobstreamX contract has committed to the provided blob")
 	} else {
@@ -198,6 +218,7 @@ func VerifyDataRootInclusion(
 	dataRoot []byte,
 	proof merkle.Proof,
 ) (bool, error) {
+	// Prepare the data root and the proof for verification
 	tuple := wrapper.DataRootTuple{
 		Height:   big.NewInt(int64(height)),
 		DataRoot: *(*[32]byte)(dataRoot),
@@ -213,6 +234,7 @@ func VerifyDataRootInclusion(
 		NumLeaves: big.NewInt(proof.Total),
 	}
 
+	// Verify the proof of inclusion for the data root in the BlobstreamX contract
 	valid, err := blobstreamWrapper.VerifyAttestation(
 		&bind.CallOpts{},
 		big.NewInt(int64(nonce)),
