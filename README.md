@@ -19,7 +19,7 @@ Celestia and Ethereum networks.
     cd blobstream-demo
     ```
 
-2. Add missing and remove unused modules from `go.mod` and download modules required for this demo:
+2. Add missing and remove unused modules from `go.mod`, and download modules required for this demo:
 
     ```bash
     make install
