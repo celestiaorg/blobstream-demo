@@ -19,25 +19,19 @@ Celestia and Ethereum networks.
     cd blobstream-demo
     ```
 
-2. Add missing and remove unused modules from `go.mod`:
+2. Add missing and remove unused modules from `go.mod` and download modules required for this demo:
 
     ```bash
-    go mod tidy
+    make install
     ```
 
-3. Download modules required for this demo:
+3. Run the demo:
 
     ```bash
-    go mod download
+    make verify
     ```
 
-4. Run the demo:
-
-    ```bash
-    go run main.go
-    ```
-
-5. See the results in your logs:
+4. See the results in your logs:
 
     ```logs
     3:04PM INF verifying that the blob was committed to by Blobstream height=105058 tx_hash=4B122452FA679F15B458271512816B933803D5870919F67969B4D62221D70346
