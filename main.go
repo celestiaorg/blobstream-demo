@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"os"
 
+	wrapper "github.com/celestiaorg/blobstream-contracts/v4/wrappers/Blobstream.sol"
 	"github.com/celestiaorg/celestia-app/pkg/square"
-	wrapper "github.com/celestiaorg/quantum-gravity-bridge/v2/wrappers/QuantumGravityBridge.sol"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcmn "github.com/ethereum/go-ethereum/common"
