@@ -91,3 +91,62 @@ The `VerifyDataRootInclusion` function verifies the proof of inclusion for
 the data root in the BlobstreamX contract. It prepares the data root and the
 proof for verification, and calls the `VerifyAttestation` method of the
 BlobstreamX contract.
+
+## Notes
+
+Alternatively to this demo, celestia-app can be used to verify that
+a transaction hash, a range of shares, or a blob referenced by its
+transaction hash were committed to by the Blobstream contract.
+
+Run this command to see the menu:
+
+```bash
+celestia-appd verify --help
+Verifies that a transaction hash, a range of shares, or a blob referenced by its transaction hash were committed to by the QGB contract
+
+Usage:
+  celestia-appd verify [command]
+
+Available Commands:
+  blob        Verifies that a blob, referenced by its transaction hash, in hex format, has been committed to by the QGB contract
+  shares      Verifies that a range of shares has been committed to by the QGB contract. The range should be end exclusive.
+  tx          Verifies that a transaction hash, in hex format, has been committed to by the QGB contract
+
+Flags:
+  -h, --help   help for verify
+
+Global Flags:
+      --home string          directory for config and data (default "/Users/joshstein/.celestia-app")
+      --log-to-file string   Write logs directly to a file. If empty, logs are written to stderr
+      --log_format string    The logging format (json|plain) (default "plain")
+      --log_level string     The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
+      --trace                print out full stack trace on errors
+
+Use "celestia-appd verify [command] --help" for more information about a command.
+```
+
+Here is the same example, queried through `celestia-appd`, as is
+used in the rest of this example:
+
+```bash
+celestia-appd verify blob \
+    4B122452FA679F15B458271512816B933803D5870919F67969B4D62221D70346 0 \
+    --contract-address 0x046120E6c6C48C05627FB369756F5f44858950a5 \
+    --celes-grpc consensus.lunaroasis.net:9090 --chain-id celestia \
+    --evm-chain-id 0x5 --evm-rpc https://eth-goerli.public.blastapi.io \
+    --node https://rpc.celestia.pops.one:443
+```
+
+Results in:
+
+```logs
+I[2023-11-21|17:48:38.249] verifying that the blob was committed to by the QGB tx_hash=4B122452FA679F15B458271512816B933803D5870919F67969B4D62221D70346 height=105058
+I[2023-11-21|17:48:38.937] proving shares inclusion to data root        height=105058 start_share=5 end_share=7
+D[2023-11-21|17:48:38.937] getting shares proof from tendermint node
+D[2023-11-21|17:48:39.341] verifying shares proofs
+I[2023-11-21|17:48:39.341] proofs from shares to data root are valid
+I[2023-11-21|17:48:39.630] proving that the data root was committed to in the QGB contract contract_address=0x046120E6c6C48C05627FB369756F5f44858950a5 fist_block=104801 last_block=105201 nonce=360
+D[2023-11-21|17:48:39.630] getting the data root to commitment inclusion proof
+I[2023-11-21|17:48:40.095] verifying that the data root was committed to in the QGB contract
+I[2023-11-21|17:48:40.341] the QGB contract didn't commit to the provided shares
+```
