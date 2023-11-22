@@ -150,3 +150,7 @@ D[2023-11-21|17:48:39.630] getting the data root to commitment inclusion proof
 I[2023-11-21|17:48:40.095] verifying that the data root was committed to in the QGB contract
 I[2023-11-21|17:48:40.341] the QGB contract didn't commit to the provided shares
 ```
+
+Looks similar to running `main.go` right?
+
+![IMG_9185](https://github.com/jcstein/blobstream-demo/assets/46639943/3f157a9e-7b84-4c90-b110-01d1d3ae068a)
