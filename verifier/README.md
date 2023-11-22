@@ -11,12 +11,11 @@ Celestia and Ethereum networks.
 
 ## Running this demo
 
-1. Clone the repository and change into the directory:
+1. [Clone this repository](../README.md#running-these-demos)
+and change into the verifier directory:
 
     ```bash
-    cd $HOME
-    git clone https://github.com/celestiaorg/blobstream-demo.git
-    cd blobstream-demo/verifier
+    cd $HOME/blobstream-demo/verifier
     ```
 
 2. Add missing and remove unused modules from `go.mod`, and download modules required for this demo:
@@ -152,6 +151,6 @@ I[2023-11-21|17:48:40.095] verifying that the data root was committed to in the 
 I[2023-11-21|17:48:40.341] the QGB contract didn't commit to the provided shares
 ```
 
-Looks similar to running `main.go` right?
+Looks similar to running `main.go`, right?
 
 ![IMG_9185](https://github.com/jcstein/blobstream-demo/assets/46639943/3f157a9e-7b84-4c90-b110-01d1d3ae068a)
