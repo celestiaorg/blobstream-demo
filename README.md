@@ -15,7 +15,7 @@ Celestia and Ethereum networks.
 
     ```bash
     cd $HOME
-    git clone https://github.com/jcstein/blobstream-demo.git
+    git clone https://github.com/celestiaorg/blobstream-demo.git
     cd blobstream-demo
     ```
 
